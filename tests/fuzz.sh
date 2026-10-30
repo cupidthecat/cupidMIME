@@ -4,6 +4,7 @@ build_dir=${BUILD_DIR:-build}
 mkdir -p "$build_dir/corpus"
 "$build_dir/test-zip" "$build_dir/corpus/epub"
 "$build_dir/test-audio" "$build_dir/corpus/flac" "$build_dir/corpus/ogg"
+"$build_dir/test-mpeg" "$build_dir/corpus/mpeg"
 printf '{"a":[true,false,null,-1.25e3,"hello"]}' > "$build_dir/corpus/json"
 printf '<!doctype html><html></html>' > "$build_dir/corpus/html"
 printf '\037\213\010\002\000\000\000\000\000\003\247\167\003\000\000\000\000\000\000\000\000\000' > "$build_dir/corpus/gzip"

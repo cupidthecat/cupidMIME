@@ -14,4 +14,15 @@ for codec in flac libopus libvorbis; do
     printf '%s\n' "$result"
     printf '%s\n' "$result" | grep -Fq ": $expected [evidence=3 flags=0 "
 done
+for rate in 44100 22050 11025; do
+    for tag in 0 3 4; do
+        output="$tmp/mp3-$rate-id3-$tag.png"
+        ffmpeg -hide_banner -loglevel error -f lavfi -i "anullsrc=r=$rate:cl=mono" \
+            -t 0.25 -c:a libmp3lame -q:a 4 -write_xing 0 -id3v2_version "$tag" \
+            -f mp3 "$output"
+        result=$("$cli" -v "$output")
+        printf '%s\n' "$result"
+        printf '%s\n' "$result" | grep -Fq ': audio/mpeg [evidence=3 flags=0 '
+    done
+done
 printf 'Independent audio encoder checks passed\n'
