@@ -1,4 +1,5 @@
 #include "cupidmime.h"
+#include "zip.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -259,26 +260,8 @@ static int binary(const byte *p, size_t n, cm_result *r) {
         else r->flags |= CM_AMBIGUOUS;
         return 1;
     }
-    if (at(p,n,0,"PK\003\004",4)) {
-        if (n < 30) reject(r,CM_TRUNCATED,"ZIP local header is incomplete");
-        else {
-            size_t extra = (size_t)le16(p+26) + le16(p+28);
-            if (!le16(p+26)) reject(r,CM_MALFORMED,"ZIP entry has an empty filename");
-            else {
-                match(r,"application/zip",CM_STRUCTURE,"ZIP local header; container subtype unresolved");
-                r->flags |= CM_AMBIGUOUS;
-                if (extra > n-30 || (!(le16(p+6) & 8u) &&
-                    (uint64_t)le32(p+18) + 30 + extra > n)) r->flags |= CM_TRUNCATED;
-            }
-        }
-        return 1;
-    }
-    if (at(p,n,0,"PK\005\006",4)) {
-        if (n < 22) reject(r,CM_TRUNCATED,"ZIP end record is incomplete");
-        else if (le16(p+4) || le16(p+6) || le16(p+8) || le16(p+10) || le32(p+12) || le32(p+16))
-            reject(r,CM_MALFORMED,"Nonempty ZIP end record without a directory");
-        else { match(r,"application/zip",CM_STRUCTURE,"Empty ZIP end record");
-            r->flags |= CM_AMBIGUOUS; if (le16(p+20) > n-22) r->flags |= CM_TRUNCATED; }
+    if (at(p,n,0,"PK\003\004",4) || at(p,n,0,"PK\005\006",4)) {
+        cm_zip_detect(p,n,r);
         return 1;
     }
     if (at(p,n,0,"\x1f\x8b",2)) {

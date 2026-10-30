@@ -16,6 +16,7 @@ MIME standards define media types and message representation. They do not make a
 - [PNG specification](https://www.w3.org/TR/png-3/): IHDR fields and legal color/bit-depth combinations.
 - [SQLite file format](https://sqlite.org/fileformat.html): database header and page-size encoding.
 - [PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT): ZIP local headers and end records.
+- [EPUB Open Container Format](https://www.w3.org/TR/epub-33/#sec-zip-container) and [IANA registration](https://www.iana.org/assignments/media-types/application/epub%2Bzip): stored mimetype member and media-type spelling. [ZIP policy](zip.md) documents CupidMIME's narrower supported archive layouts.
 - [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952.html): gzip fixed header fields.
 - [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html): JSON grammar. CupidMIME's object/array restriction, depth bound, BOM tolerance, and surrogate pairing policy are detection choices.
 

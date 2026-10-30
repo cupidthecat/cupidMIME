@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: make sanitize
+      - run: make test
+      - run: "! nm -u build/libcupidmime.a | grep -E '__asan|__ubsan'"
   fuzz-smoke:
     runs-on: ubuntu-latest
     steps:
