@@ -14,6 +14,8 @@ Selected HTML tokens are matched case-insensitively and require a delimiter. `ht
 
 ## Ambiguity and limits
 
+Font detection checks supported SFNT, collection and WOFF directories before selecting a font MIME type. Table offsets are not dereferenced until the relevant bytes are available. Readable uncompressed headers receive additional checks; compressed WOFF tables remain unchecked. A directory can establish a type while missing declared payload bytes add a truncation flag. The [font policy](fonts.md) records the limits and unsupported profiles.
+
 EBML detection follows supported header and track metadata rather than searching for document-type strings. Declared video presence can establish WebM or Matroska in a prefix; an audio-only result needs a complete supported view. Unknown-sized children, unknown profiles, unsupported codecs and conflicting metadata prevent that audio-only claim. The [EBML policy](ebml.md) lists the checks and the schema/payload limits.
 
 FLAC detection checks STREAMINFO and metadata extents. Ogg detection checks available pages and their CRCs; only a complete supported single logical stream can receive an audio subtype. Known prefixes and unsupported stream layouts remain generic. See the [audio policy](audio.md) for codec-header checks and payload-validation limits.
