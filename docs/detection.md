@@ -14,6 +14,8 @@ Selected HTML tokens are matched case-insensitively and require a delimiter. `ht
 
 ## Ambiguity and limits
 
+EBML detection follows supported header and track metadata rather than searching for document-type strings. Declared video presence can establish WebM or Matroska in a prefix; an audio-only result needs a complete supported view. Unknown-sized children, unknown profiles, unsupported codecs and conflicting metadata prevent that audio-only claim. The [EBML policy](ebml.md) lists the checks and the schema/payload limits.
+
 FLAC detection checks STREAMINFO and metadata extents. Ogg detection checks available pages and their CRCs; only a complete supported single logical stream can receive an audio subtype. Known prefixes and unsupported stream layouts remain generic. See the [audio policy](audio.md) for codec-header checks and payload-validation limits.
 
 MP3 detection requires three compatible Layer III frames at computed boundaries, optionally after bounded leading ID3v2 tags. ID3 metadata alone, isolated sync bytes and unsupported candidate parameters do not establish audio. A sufficiently long known prefix can establish this frame evidence. See the [MP3 policy](mpeg.md) for supported versions and validation limits.

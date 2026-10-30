@@ -32,6 +32,8 @@ Generic Ogg also retains `CM_AMBIGUOUS`. Its audio subtype requires a complete s
 
 ID3 metadata and unconfirmed Layer III candidates can retain the binary fallback with `CM_AMBIGUOUS`. Three complete compatible Layer III frames establish `audio/mpeg`, including in a known prefix. Truncated candidates remain unconfirmed. See the [MP3 policy](mpeg.md) for tag checks and unsupported cases.
 
+EBML document and track metadata can establish declared video presence in a prefix. Audio-only WebM/Matroska requires a complete supported resource view; neither audio type is returned by `cm_detect_prefix`. Unknown profiles and unresolved track/layout evidence keep the binary fallback. See the [EBML policy](ebml.md).
+
 A RIFF or ZIP result can retain its MIME type while carrying `CM_TRUNCATED`: enough header evidence remains to identify the family. An incomplete PNG IHDR instead yields the binary fallback. `CM_TRUNCATED` describes the available bytes; with `CM_PARTIAL`, it does not establish that the original file is truncated. Flags report only conditions the detector observes. Zero flags do not establish completeness.
 
 ## CLI

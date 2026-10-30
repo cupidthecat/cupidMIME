@@ -13,6 +13,7 @@ This table describes the checks in the source. A structural result means these p
 | Native FLAC | `audio/flac` | STREAMINFO fields, metadata order and extents; frames and other metadata payloads unchecked |
 | MP3 | `audio/mpeg` | Three complete compatible MPEG-1/2/2.5 Layer III frame extents, optional leading ID3v2 bounds and footer agreement; payload, frame CRCs and later frames unchecked; see [MP3 policy](mpeg.md) |
 | Ogg | `application/ogg`, `audio/ogg` | Available page extents, lacing, CRCs and supported single-stream sequence/continuation checks; complete supported Opus/Vorbis streams may specialize; see [audio policy](audio.md) |
+| WebM / Matroska | `video/webm`, `audio/webm`, `video/matroska`, `audio/matroska` | Supported EBML profile, DocType, element extents and track-role/codec metadata; audio-only needs a complete supported view; blocks and full schema unchecked; see [EBML policy](ebml.md) |
 | ZIP | `application/zip` | Local extent, ordinary end record, directory counts/bounds, supported local/directory metadata and descriptors; unsupported layouts and features stay generic; see [ZIP policy](zip.md) |
 | EPUB container | `application/epub+zip` | Complete supported ZIP layout, one first stored mimetype entry, exact payload and marker CRC; publication content unchecked |
 | gzip | `application/gzip` | Fixed header, DEFLATE method, reserved bits, extra field extent, name/comment terminators and optional header CRC; minimum payload/trailer space; DEFLATE, trailer CRC and concatenated members unchecked |
@@ -28,6 +29,6 @@ This table describes the checks in the source. A structural result means these p
 | Text | `text/plain` | ASCII/UTF-8 policy; no charset parameter inferred |
 | Other or empty | `application/octet-stream` | Conservative fallback |
 
-`application/x-elf`, `application/x-tar`, and `video/x-msvideo` are compatibility names; they should not be read as a claim that all returned names are registered with IANA. Aliases and subclass queries are not part of this API.
+`application/x-elf`, `application/x-tar`, and `video/x-msvideo` are compatibility names. WebM MIME names follow the WebM project guidelines. These spellings should not be read as a claim that all returned names are registered with IANA. Aliases and subclass queries are not part of this API.
 
-Current gaps include Office and other ZIP subtypes, ZIP64 and broader archive layouts, full archive validation, MPEG layers I/II and free-format rates, other Ogg codec mappings and stream layouts, WebM, fonts, PE executables, legacy text encodings, and a representative external fixture corpus. See [open issues](https://github.com/cupidthecat/cupidMIME/issues) for scoped follow-up work. There is no claim of parity with libmagic or Shared MIME-info.
+Current gaps include Office and other ZIP subtypes, ZIP64 and broader archive layouts, full archive validation, MPEG layers I/II and free-format rates, other Ogg codec mappings and stream layouts, broader EBML layouts and WebM codecs, fonts, PE executables, legacy text encodings, and a representative external fixture corpus. See [open issues](https://github.com/cupidthecat/cupidMIME/issues) for scoped follow-up work. There is no claim of parity with libmagic or Shared MIME-info.

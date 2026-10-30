@@ -14,6 +14,7 @@ clang --analyze -std=c99 -Iinclude src/cupidmime.c src/cli.c
 clang --analyze -std=c99 -Iinclude src/zip.c
 clang --analyze -std=c99 -Iinclude src/audio.c
 clang --analyze -std=c99 -Iinclude src/mpeg.c
+clang --analyze -std=c99 -Iinclude src/ebml.c
 ```
 
 Clean when changing compiler flags: make does not track command-line changes. Sanitizer builds use `build/sanitize/` and leave normal library and CLI artifacts in `build/` alone, so `make sanitize` can be followed by an ordinary build or install. The default flags treat warnings as errors. CI tests GCC and Clang independently and runs AddressSanitizer and UndefinedBehaviorSanitizer.
@@ -26,7 +27,9 @@ ZIP tests also use checked-in byte fixtures produced by Python's independent ZIP
 
 The MPEG tests use explicit frame lengths for representative rates and versions, then vary padding, bitrate, flags and tag boundaries. They cover extended-header extents, footer contradictions, large synchsafe sizes, metadata-only input and repeated tags. An MP3 payload inside a tag cannot substitute for frames at the declared outer boundary.
 
-`make fuzz-smoke` uses Clang's libFuzzer with ASan/UBSan for 10,000 mutations, seeded with synthetic JSON, HTML, gzip, RIFF, BMFF, PNG, EPUB, FLAC, Ogg and MP3 buffers. It checks both APIs and basic result invariants, including that prefixes cannot establish EPUB or audio-only Ogg. The smoke run is intentionally short; it does not establish exhaustive coverage. For a longer local run, build `build/fuzz` and run `./build/fuzz build/corpus -max_total_time=300`. Keep useful regression inputs with a test that explains the failure. A licensed real-world corpus and sustained fuzzing remain open work.
+EBML tests cover all eight size widths, known and unknown Segment lengths, default-valued profile fields, duplicate/conflicting metadata, track limits and exact-allocation prefixes. `make integration-ebml` optionally uses FFmpeg with libopus, libvpx, FLAC and FFV1 to generate audio/video WebM and Matroska files under misleading names. Core builds and tests do not need these encoders.
+
+`make fuzz-smoke` uses Clang's libFuzzer with ASan/UBSan for 10,000 mutations, seeded with synthetic JSON, HTML, gzip, RIFF, BMFF, PNG, EPUB, FLAC, Ogg, MP3 and WebM buffers. It checks both APIs and basic result invariants, including that prefixes cannot establish EPUB or audio-only Ogg/WebM/Matroska. The smoke run is intentionally short; it does not establish exhaustive coverage. For a longer local run, build `build/fuzz` and run `./build/fuzz build/corpus -max_total_time=300`. Keep useful regression inputs with a test that explains the failure. A licensed real-world corpus and sustained fuzzing remain open work.
 
 ## C formatting
 
