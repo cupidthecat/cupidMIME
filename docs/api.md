@@ -34,6 +34,8 @@ ID3 metadata and unconfirmed Layer III candidates can retain the binary fallback
 
 EBML document and track metadata can establish declared video presence in a prefix. Audio-only WebM/Matroska requires a complete supported resource view; neither audio type is returned by `cm_detect_prefix`. Unknown profiles and unresolved track/layout evidence keep the binary fallback. See the [EBML policy](ebml.md).
 
+Font types require complete supported directories, but their declared payloads can extend beyond the window. A positive font MIME type may therefore carry `CM_TRUNCATED` and `CM_PARTIAL`. Compressed WOFF table contents are not decoded. See the [font policy](fonts.md) for caps, sharing rules and readable-header checks.
+
 A RIFF or ZIP result can retain its MIME type while carrying `CM_TRUNCATED`: enough header evidence remains to identify the family. An incomplete PNG IHDR instead yields the binary fallback. `CM_TRUNCATED` describes the available bytes; with `CM_PARTIAL`, it does not establish that the original file is truncated. Flags report only conditions the detector observes. Zero flags do not establish completeness.
 
 ## CLI

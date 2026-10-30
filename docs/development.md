@@ -15,6 +15,7 @@ clang --analyze -std=c99 -Iinclude src/zip.c
 clang --analyze -std=c99 -Iinclude src/audio.c
 clang --analyze -std=c99 -Iinclude src/mpeg.c
 clang --analyze -std=c99 -Iinclude src/ebml.c
+clang --analyze -std=c99 -Iinclude src/font.c
 ```
 
 Clean when changing compiler flags: make does not track command-line changes. Sanitizer builds use `build/sanitize/` and leave normal library and CLI artifacts in `build/` alone, so `make sanitize` can be followed by an ordinary build or install. The default flags treat warnings as errors. CI tests GCC and Clang independently and runs AddressSanitizer and UndefinedBehaviorSanitizer.
@@ -29,7 +30,9 @@ The MPEG tests use explicit frame lengths for representative rates and versions,
 
 EBML tests cover all eight size widths, known and unknown Segment lengths, default-valued profile fields, duplicate/conflicting metadata, track limits and exact-allocation prefixes. `make integration-ebml` optionally uses FFmpeg with libopus, libvpx, FLAC and FFV1 to generate audio/video WebM and Matroska files under misleading names. Core builds and tests do not need these encoders.
 
-`make fuzz-smoke` uses Clang's libFuzzer with ASan/UBSan for 10,000 mutations, seeded with synthetic JSON, HTML, gzip, RIFF, BMFF, PNG, EPUB, FLAC, Ogg, MP3 and WebM buffers. It checks both APIs and basic result invariants, including that prefixes cannot establish EPUB or audio-only Ogg/WebM/Matroska. The smoke run is intentionally short; it does not establish exhaustive coverage. For a longer local run, build `build/fuzz` and run `./build/fuzz build/corpus -max_total_time=300`. Keep useful regression inputs with a test that explains the failure. A licensed real-world corpus and sustained fuzzing remain open work.
+Font tests cover SFNT/WOFF directories, readable metrics, shared-table collections, signature/optional-block extents and exact-allocation prefixes. `make integration-fonts` optionally requires Python 3, Fontconfig's `fc-scan`, and an installed source font. It packages existing font tables into WOFF and a collection, checks both with the independent reader, and uses misleading filenames. No fonts are committed or downloaded. The default source is DejaVu Sans; choose another complete font within the scan limit with `make integration-fonts FONT_SOURCE=/path/to/font.otf`.
+
+`make fuzz-smoke` uses Clang's libFuzzer with ASan/UBSan for 10,000 mutations, seeded with synthetic JSON, HTML, gzip, RIFF, BMFF, PNG, EPUB, FLAC, Ogg, MP3, WebM, TrueType, WOFF and shared-table font collection buffers. It checks both APIs and basic result invariants, including that prefixes cannot establish EPUB or audio-only Ogg/WebM/Matroska. The smoke run is intentionally short; it does not establish exhaustive coverage. For a longer local run, build `build/fuzz` and run `./build/fuzz build/corpus -max_total_time=300`. Keep useful regression inputs with a test that explains the failure. A licensed real-world corpus and sustained fuzzing remain open work.
 
 ## C formatting
 

@@ -1,6 +1,7 @@
 #include "cupidmime.h"
 #include "audio.h"
 #include "ebml.h"
+#include "font.h"
 #include "zip.h"
 #include <stdint.h>
 #include <string.h>
@@ -342,6 +343,8 @@ static int riff_chunks(const byte *p, size_t n, uint32_t size, cm_result *r) {
 }
 
 static int binary(const byte *p, size_t n, cm_result *r) {
+    if (cm_font_detect(p, n, r))
+        return 1;
     if (cm_ebml_detect(p, n, r))
         return 1;
     if (cm_audio_detect(p, n, r))
