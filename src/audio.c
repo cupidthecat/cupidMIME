@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "mpeg.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -193,6 +194,8 @@ static void ogg(const byte *p, size_t n, cm_result *r) {
 }
 
 int cm_audio_detect(const byte *p, size_t n, cm_result *r) {
+    if (cm_mpeg_detect(p, n, r))
+        return 1;
     if (n >= 4 && !memcmp(p, "fLaC", 4)) {
         flac(p, n, r);
         return 1;

@@ -18,7 +18,7 @@ enum {
     CM_TRUNCATED = 1u, /* A recognized header or declared extent is missing bytes. */
     CM_MALFORMED = 2u, /* A checked format constraint failed. */
     CM_PARTIAL = 4u,   /* Only a prefix was examined. */
-    CM_AMBIGUOUS = 8u  /* A container is recognized but its subtype is unresolved. */
+    CM_AMBIGUOUS = 8u  /* A container subtype or format candidate remains unresolved. */
 };
 
 typedef struct {

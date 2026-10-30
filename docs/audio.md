@@ -2,6 +2,8 @@
 
 Audio detection uses the same bounded buffer API as other formats. It does not decode samples or load codec libraries. Tests can optionally use FFmpeg to check files produced by an independent encoder; FFmpeg is not a build or runtime dependency.
 
+For MPEG Layer III frames and leading ID3 metadata, see the separate [MP3 policy](mpeg.md).
+
 ## Native FLAC
 
 The detector requires the `fLaC` marker followed by a complete 34-byte STREAMINFO block. It checks minimum and maximum block sizes, the ordering of known minimum/maximum frame sizes, and the encoded sample depth. Block sizes must be at least 16 samples, the maximum must not be smaller than the minimum, and sample depth must be at least 4 bits. The field encoding limits sample depth to 32 bits and channel count to 1 through 8.

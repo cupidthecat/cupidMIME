@@ -13,6 +13,7 @@ make format-check
 clang --analyze -std=c99 -Iinclude src/cupidmime.c src/cli.c
 clang --analyze -std=c99 -Iinclude src/zip.c
 clang --analyze -std=c99 -Iinclude src/audio.c
+clang --analyze -std=c99 -Iinclude src/mpeg.c
 ```
 
 Clean when changing compiler flags: make does not track command-line changes. Sanitizer builds use `build/sanitize/` and leave normal library and CLI artifacts in `build/` alone, so `make sanitize` can be followed by an ordinary build or install. The default flags treat warnings as errors. CI tests GCC and Clang independently and runs AddressSanitizer and UndefinedBehaviorSanitizer.
@@ -21,9 +22,11 @@ The tests build small byte fixtures in memory. They exercise valid headers, dama
 
 ZIP tests also use checked-in byte fixtures produced by Python's independent ZIP writer: stored and compressed markers, streaming descriptors, and duplicate names. Python is not needed to run the C suite. Maintainers can regenerate these synthetic fixtures with `python3 tests/generate_zip_fixtures.py`. They are not complete EPUB publications.
 
-`make integration-audio` is an optional test requiring FFmpeg with FLAC, libopus and libvorbis encoders. It generates short silent streams, saves them under misleading `.png` names, and checks their types and flags. Core C tests construct audio headers, damage fields and CRCs, and exercise exact-allocation prefixes without any encoder dependency.
+`make integration-audio` is an optional test requiring FFmpeg with FLAC, libopus, libvorbis and libmp3lame encoders. It generates short silent streams, saves them under misleading `.png` names, and checks their types and flags. MP3 cases cover MPEG-1/2/2.5 sample rates with no ID3 tag, ID3v2.3 and ID3v2.4. Core C tests construct audio headers, damage fields and CRCs, and exercise exact-allocation prefixes without any encoder dependency.
 
-`make fuzz-smoke` uses Clang's libFuzzer with ASan/UBSan for 10,000 mutations, seeded with synthetic JSON, HTML, gzip, RIFF, BMFF, PNG, EPUB, FLAC and Ogg buffers. It checks both APIs and basic result invariants, including that prefixes cannot establish EPUB or audio-only Ogg. The smoke run is intentionally short; it does not establish exhaustive coverage. For a longer local run, build `build/fuzz` and run `./build/fuzz build/corpus -max_total_time=300`. Keep useful regression inputs with a test that explains the failure. A licensed real-world corpus and sustained fuzzing remain open work.
+The MPEG tests use explicit frame lengths for representative rates and versions, then vary padding, bitrate, flags and tag boundaries. They cover extended-header extents, footer contradictions, large synchsafe sizes, metadata-only input and repeated tags. An MP3 payload inside a tag cannot substitute for frames at the declared outer boundary.
+
+`make fuzz-smoke` uses Clang's libFuzzer with ASan/UBSan for 10,000 mutations, seeded with synthetic JSON, HTML, gzip, RIFF, BMFF, PNG, EPUB, FLAC, Ogg and MP3 buffers. It checks both APIs and basic result invariants, including that prefixes cannot establish EPUB or audio-only Ogg. The smoke run is intentionally short; it does not establish exhaustive coverage. For a longer local run, build `build/fuzz` and run `./build/fuzz build/corpus -max_total_time=300`. Keep useful regression inputs with a test that explains the failure. A licensed real-world corpus and sustained fuzzing remain open work.
 
 ## C formatting
 
