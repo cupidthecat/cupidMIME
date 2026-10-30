@@ -14,7 +14,7 @@ cat path/to/file | ./build/cupidmime -
 make sanitize
 ```
 
-The build needs a C99 compiler, `make`, and a POSIX shell. Sanitizer checks need Clang. The library itself uses only standard C headers.
+The default build uses Clang, `make`, and a POSIX shell. GCC is also tested. The library itself uses only standard C headers. C sources follow the checked-in `.clang-format`; run `make format-check` with clang-format 18 to check them.
 
 ## Use the library
 

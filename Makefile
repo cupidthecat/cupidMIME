@@ -1,20 +1,29 @@
-CC = cc
+CC = clang
+.DEFAULT_GOAL := all
 AR = ar
 CPPFLAGS = -Iinclude
 CFLAGS = -O2 -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror
 LDFLAGS =
 PREFIX = /usr/local
 BUILD = build
+CLANG_FORMAT = clang-format-18
+FORMAT_SOURCES = $(wildcard include/*.h src/*.c src/*.h tests/*.c tests/*.h)
 
-.PHONY: all test sanitize clean install fuzz-smoke
+.PHONY: all test sanitize clean install fuzz-smoke integration-audio format format-check
+format:
+	$(CLANG_FORMAT) -i $(FORMAT_SOURCES)
+format-check:
+	$(CLANG_FORMAT) --dry-run --Werror $(FORMAT_SOURCES)
 all: $(BUILD)/libcupidmime.a $(BUILD)/cupidmime
 $(BUILD):
 	mkdir -p $(BUILD)
-$(BUILD)/cupidmime.o: src/cupidmime.c src/zip.h include/cupidmime.h | $(BUILD)
+$(BUILD)/cupidmime.o: src/cupidmime.c src/zip.h src/audio.h include/cupidmime.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 $(BUILD)/zip.o: src/zip.c src/zip.h include/cupidmime.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-$(BUILD)/libcupidmime.a: $(BUILD)/cupidmime.o $(BUILD)/zip.o
+$(BUILD)/audio.o: src/audio.c src/audio.h include/cupidmime.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+$(BUILD)/libcupidmime.a: $(BUILD)/cupidmime.o $(BUILD)/zip.o $(BUILD)/audio.o
 	$(AR) rcs $@ $^
 $(BUILD)/cupidmime: src/cli.c $(BUILD)/libcupidmime.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(BUILD)/libcupidmime.a $(LDFLAGS) -o $@
@@ -22,15 +31,20 @@ $(BUILD)/test: tests/test.c $(BUILD)/libcupidmime.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(BUILD)/libcupidmime.a $(LDFLAGS) -o $@
 $(BUILD)/test-zip: tests/zip.c tests/zip_fixtures.h $(BUILD)/libcupidmime.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(BUILD)/libcupidmime.a $(LDFLAGS) -o $@
-test: all $(BUILD)/test $(BUILD)/test-zip
+$(BUILD)/test-audio: tests/audio.c $(BUILD)/libcupidmime.a
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(BUILD)/libcupidmime.a $(LDFLAGS) -o $@
+test: all $(BUILD)/test $(BUILD)/test-zip $(BUILD)/test-audio
 	./$(BUILD)/test
 	./$(BUILD)/test-zip
+	./$(BUILD)/test-audio
 	CUPIDMIME="$(abspath $(BUILD)/cupidmime)" sh tests/cli.sh
 sanitize:
 	$(MAKE) test BUILD=build/sanitize CC=clang CFLAGS='-O1 -g -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer' LDFLAGS='-fsanitize=address,undefined'
-$(BUILD)/fuzz: tests/fuzz.c src/cupidmime.c src/zip.c src/zip.h include/cupidmime.h | $(BUILD)
-	clang $(CPPFLAGS) -std=c99 -O1 -g -fsanitize=fuzzer,address,undefined tests/fuzz.c src/cupidmime.c src/zip.c -o $@
-fuzz-smoke: $(BUILD)/fuzz $(BUILD)/test-zip
+integration-audio: all
+	CUPIDMIME="$(abspath $(BUILD)/cupidmime)" sh tests/audio_integration.sh
+$(BUILD)/fuzz: tests/fuzz.c src/cupidmime.c src/zip.c src/audio.c src/zip.h src/audio.h include/cupidmime.h | $(BUILD)
+	clang $(CPPFLAGS) -std=c99 -O1 -g -fsanitize=fuzzer,address,undefined tests/fuzz.c src/cupidmime.c src/zip.c src/audio.c -o $@
+fuzz-smoke: $(BUILD)/fuzz $(BUILD)/test-zip $(BUILD)/test-audio
 	BUILD_DIR="$(BUILD)" sh tests/fuzz.sh
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include

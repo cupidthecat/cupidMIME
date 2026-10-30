@@ -19,5 +19,6 @@ MIME standards define media types and message representation. They do not make a
 - [EPUB Open Container Format](https://www.w3.org/TR/epub-33/#sec-zip-container) and [IANA registration](https://www.iana.org/assignments/media-types/application/epub%2Bzip): stored mimetype member and media-type spelling. [ZIP policy](zip.md) documents CupidMIME's narrower supported archive layouts.
 - [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952.html): gzip fixed header fields.
 - [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html): JSON grammar. CupidMIME's object/array restriction, depth bound, BOM tolerance, and surrogate pairing policy are detection choices.
+- [RFC 9639](https://www.rfc-editor.org/rfc/rfc9639.html), [RFC 3533](https://www.rfc-editor.org/rfc/rfc3533.html), [RFC 7845](https://www.rfc-editor.org/rfc/rfc7845.html), and the [Vorbis I specification](https://xiph.org/vorbis/doc/Vorbis_I_spec.html): native FLAC metadata, Ogg pages and checksums, and supported codec identification headers. The [audio policy](audio.md) records the narrower detection checks.
 
 These references guide individual checks. The [coverage table](formats.md) records what the code actually verifies and what it leaves unchecked.

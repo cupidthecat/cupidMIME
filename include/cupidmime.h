@@ -11,21 +11,22 @@ extern "C" {
 #define CM_SCAN_LIMIT ((size_t)1048576)
 
 typedef enum { CM_OK = 0, CM_INVALID_ARGUMENT = 1 } cm_status;
-typedef enum {
-    CM_FALLBACK = 0, CM_TEXT = 1, CM_SIGNATURE = 2, CM_STRUCTURE = 3
-} cm_evidence;
+
+typedef enum { CM_FALLBACK = 0, CM_TEXT = 1, CM_SIGNATURE = 2, CM_STRUCTURE = 3 } cm_evidence;
+
 enum {
     CM_TRUNCATED = 1u, /* A recognized header or declared extent is missing bytes. */
     CM_MALFORMED = 2u, /* A checked format constraint failed. */
     CM_PARTIAL = 4u,   /* Only a prefix was examined. */
     CM_AMBIGUOUS = 8u  /* A container is recognized but its subtype is unresolved. */
 };
+
 typedef struct {
-    const char *mime;       /* Static storage, no parameters. */
-    const char *reason;     /* Static diagnostic, not a stable machine identifier. */
+    const char *mime;   /* Static storage, no parameters. */
+    const char *reason; /* Static diagnostic, not a stable machine identifier. */
     cm_evidence evidence;
     unsigned flags;
-    size_t examined;        /* Size of the bounded inspection window. */
+    size_t examined; /* Size of the bounded inspection window. */
 } cm_result;
 
 /* NULL data is permitted only with size == 0. No output is changed on error.

@@ -28,6 +28,8 @@ Flags are independent bits:
 
 Generic ZIP retains `CM_AMBIGUOUS` even after the supported directory checks pass. It means the subtype remains unresolved, not that directory corruption was found. Contradictory checked ZIP metadata adds `CM_MALFORMED` while retaining the generic family. See [ZIP and EPUB detection](zip.md) for supported layouts and the effect of partial input.
 
+Generic Ogg also retains `CM_AMBIGUOUS`. Its audio subtype requires a complete supported single stream; `cm_detect_prefix` never returns `audio/ogg`. Native FLAC can be established from a complete STREAMINFO block in a prefix. See [audio detection](audio.md).
+
 A RIFF or ZIP result can retain its MIME type while carrying `CM_TRUNCATED`: enough header evidence remains to identify the family. An incomplete PNG IHDR instead yields the binary fallback. `CM_TRUNCATED` describes the available bytes; with `CM_PARTIAL`, it does not establish that the original file is truncated. Flags report only conditions the detector observes. Zero flags do not establish completeness.
 
 ## CLI
