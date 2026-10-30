@@ -10,7 +10,14 @@ static cm_result detect(const void *p, size_t n) {
     cm_result r; CHECK(cm_detect(p,n,&r) == CM_OK); return r;
 }
 static void type(const void *p, size_t n, const char *mime) {
+    size_t i;
     cm_result r = detect(p,n); CHECK(!strcmp(r.mime,mime)); CHECK(r.examined == n);
+    for(i=1;i<n;++i) {
+        unsigned char *b=malloc(i); CHECK(b!=NULL); memcpy(b,p,i);
+        (void)detect(b,i);
+        CHECK(cm_detect_prefix(b,i,&r)==CM_OK); CHECK(r.flags & CM_PARTIAL);
+        free(b);
+    }
 }
 static void text(const char *s, const char *mime) { type(s,strlen(s),mime); }
 static void be(unsigned char *p, uint32_t v) {
@@ -77,6 +84,38 @@ static void texts(void) {
     CHECK(cm_detect_prefix("{}",2,&r)==CM_OK); CHECK(!strcmp(r.mime,"text/plain")); CHECK(r.flags & CM_PARTIAL);
     { char deep[200]; memset(deep,'[',100); memset(deep+100,']',100); type(deep,200,"text/plain"); }
 }
+static void containers(void) {
+    unsigned char p[100] = {0}; cm_result r; size_t i;
+    memcpy(p,"\x1f\x8b\x08",3); p[3]=4; p[10]=3;
+    CHECK(detect(p,11).flags & CM_TRUNCATED);
+    CHECK(detect(p,14).flags & CM_TRUNCATED);
+    type(p,25,"application/gzip"); CHECK(detect(p,25).flags==0);
+    p[3]=8; memset(p+10,'x',90);
+    r=detect(p,100); CHECK(r.flags & CM_TRUNCATED); CHECK(r.evidence==CM_FALLBACK);
+    p[15]=0; type(p,26,"application/gzip");
+    p[3]=16; type(p,26,"application/gzip");
+    p[3]=0xe0; CHECK(detect(p,26).flags & CM_MALFORMED);
+    memset(p,0,sizeof(p)); memcpy(p,"\x1f\x8b\x08\x02",4); p[9]=3;
+    /* Header CRC fixture is generated independently from the implementation. */
+    p[10]=0; p[11]=0;
+    CHECK(detect(p,22).flags & CM_MALFORMED);
+    p[10]=0xa7; p[11]=0x77;
+    type(p,22,"application/gzip"); CHECK(detect(p,22).flags==0);
+    p[10]^=1; CHECK(detect(p,22).flags & CM_MALFORMED);
+    memset(p,0,sizeof(p)); memcpy(p,"RIFF",4); memcpy(p+8,"WAVE",4);
+    le(p+4,14); memcpy(p+12,"JUNK",4); le(p+16,1); p[20]=42;
+    type(p,22,"audio/wav"); CHECK(detect(p,22).flags==0);
+    CHECK(detect(p,21).flags & CM_TRUNCATED);
+    le(p+4,13); CHECK(detect(p,22).flags & CM_MALFORMED); /* padding outside outer extent */
+    le(p+4,14); le(p+16,0xffffffffu); CHECK(detect(p,22).flags & CM_MALFORMED);
+    le(p+4,5); CHECK(detect(p,22).flags & CM_MALFORMED);
+    le(p+4,14); le(p+16,1);
+    /* Each prefix is a separate allocation, not an oversized backing array. */
+    for(i=1;i<=22;++i) {
+        unsigned char *b=malloc(i); CHECK(b!=NULL); memcpy(b,p,i);
+        (void)detect(b,i); free(b);
+    }
+}
 static void boundaries(void) {
     uint32_t state=0x12345678u; unsigned k; size_t i,n; unsigned char p[1024]; cm_result r, before;
     r=detect(NULL,0); CHECK(!strcmp(r.mime,"application/octet-stream"));
@@ -96,6 +135,6 @@ static void boundaries(void) {
       r=detect(b,CM_SCAN_LIMIT+1); CHECK(r.flags & CM_PARTIAL); CHECK(r.examined==CM_SCAN_LIMIT); free(b); }
 }
 int main(void) {
-    binary_formats(); texts(); boundaries();
+    binary_formats(); texts(); containers(); boundaries();
     printf("%u checks passed\n",checks); return 0;
 }

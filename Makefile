@@ -5,7 +5,7 @@ CFLAGS = -O2 -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror
 LDFLAGS =
 PREFIX = /usr/local
 
-.PHONY: all test sanitize clean install
+.PHONY: all test sanitize clean install fuzz-smoke
 all: build/libcupidmime.a build/cupidmime
 build:
 	mkdir -p build
@@ -23,6 +23,10 @@ test: all build/test
 sanitize:
 	$(MAKE) clean
 	$(MAKE) test CC=clang CFLAGS='-O1 -g -std=c99 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer' LDFLAGS='-fsanitize=address,undefined'
+build/fuzz: tests/fuzz.c src/cupidmime.c include/cupidmime.h | build
+	clang $(CPPFLAGS) -std=c99 -O1 -g -fsanitize=fuzzer,address,undefined tests/fuzz.c src/cupidmime.c -o $@
+fuzz-smoke: build/fuzz
+	sh tests/fuzz.sh
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include
 	install -m 755 build/cupidmime $(DESTDIR)$(PREFIX)/bin/
