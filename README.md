@@ -20,6 +20,7 @@ The build needs a C99 compiler, `make`, and a POSIX shell. Sanitizer checks need
 
 ```c
 #include "cupidmime.h"
+#include <stdio.h>
 
 cm_result result;
 if (cm_detect(bytes, length, &result) == CM_OK)

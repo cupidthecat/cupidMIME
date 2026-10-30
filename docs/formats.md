@@ -7,11 +7,11 @@ This table describes the checks in the source. A structural result means these p
 | PNG | `image/png` | Signature, complete IHDR extent, length, dimensions, color/bit-depth combinations, compression/filter/interlace fields; CRC and later chunks unchecked |
 | GIF | `image/gif` | 87a/89a signature, logical screen header, nonzero dimensions; tables and frames unchecked |
 | JPEG | `image/jpeg` | Start-of-image and marker prefix; segments and image data unchecked |
-| WebP | `image/webp` | RIFF extent, first chunk tag and chunk extent within RIFF; codec payload and padding unchecked |
-| WAVE | `audio/wav` | RIFF extent and WAVE form; audio chunks unchecked |
-| AVI | `video/x-msvideo` | RIFF extent and AVI form; stream chunks unchecked |
+| WebP | `image/webp` | RIFF extent, first chunk tag, all available chunk lengths and padding extents; codec payload and padding byte values unchecked |
+| WAVE | `audio/wav` | RIFF extent, WAVE form, all available chunk lengths and padding extents; audio payload unchecked |
+| AVI | `video/x-msvideo` | RIFF extent, AVI form, all available outer chunk lengths and padding extents; nested lists and stream payload unchecked |
 | ZIP | `application/zip` | Local header, nonempty filename, variable header extent, compressed extent when available; or empty end record; directory consistency, CRC, encryption and ZIP64 unchecked |
-| gzip | `application/gzip` | Fixed header, DEFLATE method and reserved bits; optional fields, payload and trailer unchecked |
+| gzip | `application/gzip` | Fixed header, DEFLATE method, reserved bits, extra field extent, name/comment terminators and optional header CRC; minimum payload/trailer space; DEFLATE, trailer CRC and concatenated members unchecked |
 | PDF | `application/pdf` | Offset-zero version line with major 1 or 2 and one decimal minor digit; objects and EOF unchecked |
 | ELF | `application/x-elf` | Identification, class, byte order, version and file header length; type and section tables unchecked |
 | SQLite | `application/vnd.sqlite3` | Database magic, 100-byte header, page size, read/write versions and payload fractions; pages unchecked |

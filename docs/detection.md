@@ -14,6 +14,8 @@ Selected HTML tokens are matched case-insensitively and require a delimiter. `ht
 
 ## Ambiguity and limits
 
+RIFF chunk lengths include an even-byte padding requirement. The detector walks available outer chunks, rejects extents beyond the declared container, and flags chunks that extend beyond the supplied window. It does not interpret WAVE audio parameters or nested AVI lists. gzip optional fields must fit and strings must terminate; an optional header CRC is checked. The compressed stream and trailer are still unchecked. A header-only gzip result carries `CM_TRUNCATED` when even the minimum payload and trailer space is absent.
+
 ZIP receives a generic type even when an entry name resembles an Office document. The library does not inspect compressed content, follow nested archives, or trust member names as subtype evidence. Unknown RIFF forms and ISO BMFF brands retain the binary fallback with `CM_AMBIGUOUS`. For BMFF, AVIF brands take precedence over the MP4 family; M4A takes precedence over generic MP4 brands. The detector does not inspect media tracks or identify every incompatible brand combination.
 
 Rule order is deterministic. This release reports one result and does not enumerate polyglots. A file with one format's header and another format's content can still match the first header. Some formats, including scripts and source code, have no unique content signature and remain text.

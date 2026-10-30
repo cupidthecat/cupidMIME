@@ -16,3 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: make sanitize
+  fuzz-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make fuzz-smoke

@@ -149,6 +149,68 @@ static int value(json *j, unsigned depth) {
     return j->i > start;
 }
 
+static uint32_t crc32(const byte *p, size_t n) {
+    uint32_t crc = 0xffffffffu; size_t i; unsigned bit;
+    for (i=0; i<n; ++i) {
+        crc ^= p[i];
+        for (bit=0; bit<8; ++bit)
+            crc = (crc >> 1) ^ ((crc & 1u) ? 0xedb88320u : 0);
+    }
+    return crc ^ 0xffffffffu;
+}
+
+static void gzip_header(const byte *p, size_t n, cm_result *r) {
+    size_t off = 10; unsigned flag, k;
+    if (n < 10) { reject(r,CM_TRUNCATED,"gzip fixed header is incomplete"); return; }
+    if (p[2] != 8 || (p[3] & 0xe0)) {
+        reject(r,CM_MALFORMED,"Invalid gzip method or reserved flags"); return;
+    }
+    flag = p[3];
+    if (flag & 4u) {
+        size_t len;
+        if (n-off < 2) { reject(r,CM_TRUNCATED,"gzip extra length is incomplete"); return; }
+        len = le16(p+off); off += 2;
+        if (len > n-off) { reject(r,CM_TRUNCATED,"gzip extra field is incomplete"); return; }
+        off += len;
+    }
+    for (k=8; k<=16; k*=2) {
+        if (flag & k) {
+            while (off < n && p[off]) ++off;
+            if (off == n) { reject(r,CM_TRUNCATED,"gzip name or comment lacks a terminator"); return; }
+            ++off;
+        }
+    }
+    if (flag & 2u) {
+        if (n-off < 2) { reject(r,CM_TRUNCATED,"gzip header CRC is incomplete"); return; }
+        if ((crc32(p,off) & 0xffffu) != le16(p+off)) {
+            reject(r,CM_MALFORMED,"gzip header CRC mismatch"); return;
+        }
+        off += 2;
+    }
+    match(r,"application/gzip",CM_STRUCTURE,"gzip header and optional fields checked; DEFLATE and trailer unchecked");
+    if (n-off < 10) r->flags |= CM_TRUNCATED; /* Minimum DEFLATE stream plus trailer. */
+}
+
+/* Check every available chunk against both the outer extent and the buffer.
+ * Use 64-bit arithmetic so a 32-bit length plus padding cannot wrap. */
+static int riff_chunks(const byte *p, size_t n, uint32_t size, cm_result *r) {
+    uint64_t end = (uint64_t)size + 8, off = 12;
+    while (off < end) {
+        uint64_t next;
+        uint32_t len;
+        if (end-off < 8) { reject(r,CM_MALFORMED,"RIFF ends inside a chunk header"); return 0; }
+        if (off > n || n-(size_t)off < 8) {
+            r->flags |= CM_TRUNCATED; return 1;
+        }
+        len = le32(p+(size_t)off+4);
+        next = off + 8 + (uint64_t)len + (len & 1u);
+        if (next > end) { reject(r,CM_MALFORMED,"RIFF chunk or padding exceeds container"); return 0; }
+        if (next > n) { r->flags |= CM_TRUNCATED; return 1; }
+        off = next;
+    }
+    return 1;
+}
+
 static int binary(const byte *p, size_t n, cm_result *r) {
     if (at(p,n,0,"\x89PNG\r\n\x1a\n",8)) {
         if (n < 33) reject(r,CM_TRUNCATED,"PNG IHDR is incomplete");
@@ -192,7 +254,8 @@ static int binary(const byte *p, size_t n, cm_result *r) {
             mime = "image/webp";
         } else if (at(p,n,8,"WAVE",4)) mime = "audio/wav";
         else if (at(p,n,8,"AVI ",4)) mime = "video/x-msvideo";
-        if (mime) match(r,mime,CM_STRUCTURE,"RIFF form and declared extent checked");
+        if (!riff_chunks(p,n,size,r)) return 1;
+        if (mime) match(r,mime,CM_STRUCTURE,"RIFF form, available chunk extents and padding checked");
         else r->flags |= CM_AMBIGUOUS;
         return 1;
     }
@@ -219,9 +282,7 @@ static int binary(const byte *p, size_t n, cm_result *r) {
         return 1;
     }
     if (at(p,n,0,"\x1f\x8b",2)) {
-        if (n < 10) reject(r,CM_TRUNCATED,"gzip fixed header is incomplete");
-        else if (p[2] != 8 || (p[3] & 0xe0)) reject(r,CM_MALFORMED,"Invalid gzip method or reserved flags");
-        else match(r,"application/gzip",CM_STRUCTURE,"gzip fixed header checked; optional fields unchecked");
+        gzip_header(p,n,r);
         return 1;
     }
     if (at(p,n,0,"%PDF-",5)) {
