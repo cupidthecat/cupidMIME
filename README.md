@@ -29,4 +29,4 @@ if (cm_detect(bytes, length, &result) == CM_OK)
 
 Link `build/libcupidmime.a` and add `include/` to your include path. Detection does not allocate memory, open files, or inspect filenames. Calls are independent and safe to run from multiple threads.
 
-See the [API contract](docs/api.md), [format coverage](docs/formats.md), [standards notes](docs/standards.md), and [development guide](docs/development.md). The [wiki](https://github.com/cupidthecat/cupidMIME/wiki) provides a short entry point; detailed documentation lives in `docs/` alongside the code.
+See the [API contract](docs/api.md), [format coverage](docs/formats.md), [ZIP and EPUB policy](docs/zip.md), [standards notes](docs/standards.md), and [development guide](docs/development.md). The [wiki](https://github.com/cupidthecat/cupidMIME/wiki) provides a short entry point; detailed documentation lives in `docs/` alongside the code.

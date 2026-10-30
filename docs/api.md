@@ -26,6 +26,8 @@ Flags are independent bits:
 | `CM_PARTIAL` | The caller supplied a prefix, or the buffer exceeded the scan limit |
 | `CM_AMBIGUOUS` | A container was recognized but its more specific type remains unresolved |
 
+Generic ZIP retains `CM_AMBIGUOUS` even after the supported directory checks pass. It means the subtype remains unresolved, not that directory corruption was found. Contradictory checked ZIP metadata adds `CM_MALFORMED` while retaining the generic family. See [ZIP and EPUB detection](zip.md) for supported layouts and the effect of partial input.
+
 A RIFF or ZIP result can retain its MIME type while carrying `CM_TRUNCATED`: enough header evidence remains to identify the family. An incomplete PNG IHDR instead yields the binary fallback. `CM_TRUNCATED` describes the available bytes; with `CM_PARTIAL`, it does not establish that the original file is truncated. Flags report only conditions the detector observes. Zero flags do not establish completeness.
 
 ## CLI

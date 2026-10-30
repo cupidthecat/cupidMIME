@@ -10,7 +10,8 @@ This table describes the checks in the source. A structural result means these p
 | WebP | `image/webp` | RIFF extent, first chunk tag, all available chunk lengths and padding extents; codec payload and padding byte values unchecked |
 | WAVE | `audio/wav` | RIFF extent, WAVE form, all available chunk lengths and padding extents; audio payload unchecked |
 | AVI | `video/x-msvideo` | RIFF extent, AVI form, all available outer chunk lengths and padding extents; nested lists and stream payload unchecked |
-| ZIP | `application/zip` | Local header, nonempty filename, variable header extent, compressed extent when available; or empty end record; directory consistency, CRC, encryption and ZIP64 unchecked |
+| ZIP | `application/zip` | Local extent, ordinary end record, directory counts/bounds, supported local/directory metadata and descriptors; unsupported layouts and features stay generic; see [ZIP policy](zip.md) |
+| EPUB container | `application/epub+zip` | Complete supported ZIP layout, one first stored mimetype entry, exact payload and marker CRC; publication content unchecked |
 | gzip | `application/gzip` | Fixed header, DEFLATE method, reserved bits, extra field extent, name/comment terminators and optional header CRC; minimum payload/trailer space; DEFLATE, trailer CRC and concatenated members unchecked |
 | PDF | `application/pdf` | Offset-zero version line with major 1 or 2 and one decimal minor digit; objects and EOF unchecked |
 | ELF | `application/x-elf` | Identification, class, byte order, version and file header length; type and section tables unchecked |
@@ -26,4 +27,4 @@ This table describes the checks in the source. A structural result means these p
 
 `application/x-elf`, `application/x-tar`, and `video/x-msvideo` are compatibility names; they should not be read as a claim that all returned names are registered with IANA. Aliases and subclass queries are not part of this API.
 
-Current gaps include ZIP subtypes, full archive consistency, Ogg/FLAC/MP3, WebM, fonts, PE executables, legacy text encodings, and a representative external fixture corpus. See [open issues](https://github.com/cupidthecat/cupidMIME/issues) for scoped follow-up work. There is no claim of parity with libmagic or Shared MIME-info.
+Current gaps include Office and other ZIP subtypes, ZIP64 and broader archive layouts, full archive validation, Ogg/FLAC/MP3, WebM, fonts, PE executables, legacy text encodings, and a representative external fixture corpus. See [open issues](https://github.com/cupidthecat/cupidMIME/issues) for scoped follow-up work. There is no claim of parity with libmagic or Shared MIME-info.
