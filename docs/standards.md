@@ -1,0 +1,22 @@
+# Standards and source notes
+
+MIME standards define media types and message representation. They do not make a content detector a validator. CupidMIME uses them for names and policy, with format specifications supplying header constraints.
+
+| Reference | Use in CupidMIME |
+| --- | --- |
+| [RFC 2045](https://www.rfc-editor.org/rfc/rfc2045) | MIME type/subtype and parameter model. API output is the media type essence; transfer encodings are not decoded. |
+| [RFC 2046](https://www.rfc-editor.org/rfc/rfc2046) | Core media-type families and generic binary fallback. This library does not parse multipart messages or implement mail defaults. |
+| [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838) | Media-type naming and registration conventions. Detection rules do not create new registrations. |
+| [IANA registry](https://www.iana.org/assignments/media-types/) | Registered media names and links to their specifications. The compiled rules are a selected set, not a downloaded registry. Compatibility names are identified in the coverage table. |
+| [WHATWG MIME Sniffing](https://mimesniff.spec.whatwg.org/) | Signature and token-boundary reference. CupidMIME has no HTTP context, supplied MIME type, or browser execution policy, and does not claim algorithm conformance. |
+| [Shared MIME-info](https://specifications.freedesktop.org/shared-mime-info/latest/ar01s02.html) | Reference for magic priorities, aliases and subclass relationships. CupidMIME uses explicit rule order and generic container fallback. It does not load magic XML, filename globs, aliases, or subclass databases. |
+
+## Format references
+
+- [PNG specification](https://www.w3.org/TR/png-3/): IHDR fields and legal color/bit-depth combinations.
+- [SQLite file format](https://sqlite.org/fileformat.html): database header and page-size encoding.
+- [PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT): ZIP local headers and end records.
+- [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952.html): gzip fixed header fields.
+- [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html): JSON grammar. CupidMIME's object/array restriction, depth bound, BOM tolerance, and surrogate pairing policy are detection choices.
+
+These references guide individual checks. The [coverage table](formats.md) records what the code actually verifies and what it leaves unchecked.

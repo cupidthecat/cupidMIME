@@ -1,0 +1,23 @@
+# Detection policy
+
+CupidMIME identifies bytes without consulting extensions, paths, HTTP headers, the system MIME database, or a remote service. It uses a fixed set of rules compiled into the library.
+
+Binary rules run first. A recognized binary family stops detection even when a checked field is invalid. This prevents an invalid PDF header, for example, from being reclassified as ordinary text. Prefixes of selected strong signatures receive `CM_TRUNCATED` when at least two matching bytes are available. One-byte fragments remain unknown.
+
+Text detection runs only after binary rules fail. It accepts ASCII printable characters, tab, line feed, carriage return, form feed, and well-formed UTF-8. It rejects NUL, other ASCII controls, DEL, invalid continuation bytes, overlong encodings, surrogates, and values above U+10FFFF. This is a text heuristic: valid Unicode may still encode unusual controls, and random bytes can occasionally pass it. UTF-16 and UTF-32 currently remain binary fallback.
+
+An incomplete UTF-8 sequence at the end of a known prefix is allowed only when its available bytes can still form a valid sequence. A complete input with that same sequence falls back to binary. Prefix text cannot establish the encoding of bytes outside the window.
+
+After an optional UTF-8 BOM and ASCII whitespace, a complete JSON object or array receives `application/json`. The parser checks strings and escapes, surrogate pairs, number syntax, delimiters, and trailing bytes. It accepts duplicate object keys without resolving them. It does not convert numbers or enforce a numeric range. Nesting is limited to 64 recursive levels. Deeper input remains `text/plain`. JSON scalars also remain text because a word such as `true` or a number alone is weak evidence. Known prefixes never receive a JSON classification.
+
+Selected HTML tokens are matched case-insensitively and require a delimiter. `htmlish` does not match `html`. An XML declaration prefix is case sensitive and requires whitespace after `xml`. These are token rules, not HTML or XML parsers. They do not verify the rest of the document.
+
+## Ambiguity and limits
+
+ZIP receives a generic type even when an entry name resembles an Office document. The library does not inspect compressed content, follow nested archives, or trust member names as subtype evidence. Unknown RIFF forms and ISO BMFF brands retain the binary fallback with `CM_AMBIGUOUS`. For BMFF, AVIF brands take precedence over the MP4 family; M4A takes precedence over generic MP4 brands. The detector does not inspect media tracks or identify every incompatible brand combination.
+
+Rule order is deterministic. This release reports one result and does not enumerate polyglots. A file with one format's header and another format's content can still match the first header. Some formats, including scripts and source code, have no unique content signature and remain text.
+
+Every offset read is guarded by the available window. Integer fields are decoded byte by byte rather than through unaligned casts. Container length comparisons use widened arithmetic or subtraction. Text parsing is linear in the bounded window, with recursion capped at 64. Binary checks do not decompress data. These limits bound inspection work; they do not establish that identified files are safe for another parser.
+
+For uploads, treat the result as one input to your application's policy. Validate a supported format with its actual decoder before processing it. A MIME name alone cannot establish that the content is harmless.
