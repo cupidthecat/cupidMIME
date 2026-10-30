@@ -9,6 +9,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (cm_detect(data, size, &a) != CM_OK || cm_detect_prefix(data, size, &b) != CM_OK)
         abort();
     if (!strcmp(b.mime, "application/epub+zip") || !strcmp(b.mime, "audio/ogg") ||
+        !strcmp(b.mime, "audio/webm") || !strcmp(b.mime, "audio/matroska") ||
         (!strcmp(a.mime, "application/epub+zip") && (a.flags || a.evidence != CM_STRUCTURE)))
         abort();
     if (!a.mime || !a.reason || !b.mime || !b.reason || a.examined > CM_SCAN_LIMIT ||
